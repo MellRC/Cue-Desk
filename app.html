@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="light">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>CueDesk</title>
+  <script>try { document.documentElement.dataset.theme = localStorage.getItem('slide-theme') === 'dark' ? 'dark' : 'light'; } catch (_) {}</script>
+  <link rel="stylesheet" href="app.css" />
+</head>
+<body>
+  <header class="titlebar">
+    <div class="brand"><img class="brand-mark" src="assets/cuedesk-raccoon-logo-variants/cuedesk-raccoon-01-mask.svg" alt="CueDesk 浣熊标志"/><span>CueDesk</span></div>
+    <div class="window-actions">
+      <button id="btn-theme" class="theme-switch" title="切换为纯黑模式" aria-label="切换为纯黑模式"><span id="theme-icon">◐</span><span id="theme-label">纯白</span></button>
+      <span class="window-divider"></span>
+      <button id="btn-minimize" class="window-button" aria-label="最小化" title="最小化"><svg viewBox="0 0 16 16"><path d="M3 8h10"/></svg></button>
+      <button id="btn-maximize" class="window-button" aria-label="最大化" title="最大化"><svg viewBox="0 0 16 16"><rect x="3.5" y="3.5" width="9" height="9"/></svg></button>
+      <button id="btn-close" class="window-button close" aria-label="关闭窗口" title="关闭窗口"><svg viewBox="0 0 16 16"><path d="m4 4 8 8M12 4l-8 8"/></svg></button>
+    </div>
+  </header>
+  <main id="home" class="view">
+    <div class="library-scroll">
+      <header class="library-hero">
+        <div class="hero-copy"><div class="eyebrow">YOUR PRESENTATION SPACE</div><h1>让每一次演示，<br>从容开始<span class="hero-dot">.</span></h1><p>把内容交给画面，把专注留给表达。</p></div>
+        <div class="hero-side"><div class="hero-visual" aria-hidden="true"><span class="hero-ray ray-one"></span><span class="hero-ray ray-two"></span><span class="hero-ray ray-three"></span><div class="hero-screen"><span class="screen-mark">C</span><span class="screen-line line-one"></span><span class="screen-line line-two"></span><span class="screen-line line-three"></span></div><span class="hero-floor"></span></div><button type="button" id="btn-import" class="btn-pri import-button"><span class="plus">+</span> 导入 HTML <span class="shortcut">Ctrl O</span></button></div>
+      </header>
+      <section class="library-toolbar"><div class="library-heading"><h2>我的演示</h2><span id="library-count" class="count-badge">0</span></div><label class="search"><svg viewBox="0 0 20 20"><circle cx="8.5" cy="8.5" r="5.5"/><path d="m13 13 4 4"/></svg><input id="search" type="search" placeholder="搜索演示…" aria-label="搜索演示"/><span>/</span></label></section>
+      <section id="cards" class="cards" aria-label="演示项目"></section>
+      <section id="empty" class="empty"><div class="empty-art"><span></span><span></span><span>↗</span></div><h2 id="empty-title">你的下一场精彩，从这里开始</h2><p id="empty-description">导入一份 HTML，即可预览、记录讲稿和投屏演示。</p><button id="btn-empty-import" class="btn-ghost">导入第一份演示 <span>↗</span></button></section>
+    </div>
+    <footer class="statusbar"><span><i class="status-dot"></i> 本地工作空间</span><span>HTML 演示 · 独立讲稿 · 双屏播放</span></footer>
+  </main>
+  <main id="project" class="view hidden">
+    <header class="project-toolbar">
+      <button type="button" id="btn-back" class="icon-button" aria-label="返回项目库" title="返回项目库">←</button>
+      <span class="toolbar-divider"></span><h1 id="proj-title">项目</h1>
+      <div class="mode-tabs" aria-label="工作模式"><button type="button" data-mode="edit" class="btn-tab is-on">讲稿编辑</button><button type="button" data-mode="play" class="btn-tab">投屏播放 ↗</button></div>
+      <button type="button" id="btn-stop" class="btn-ghost" disabled>结束投屏</button>
+    </header>
+    <div id="workspace" class="workspace mode-edit">
+      <section class="col-main"><div class="stage-heading"><span>当前画面</span><span id="stage-mode">讲稿编辑</span></div><div class="stage"><div class="viewport"><iframe id="frame-main" title="幻灯片" allow="fullscreen; autoplay" allowfullscreen></iframe></div></div><div class="stage-footer"><span class="keyboard-hint">← → 切换幻灯片</span><div class="pager"><button type="button" id="btn-prev" class="btn-pager" aria-label="上一页">←</button><span id="pager-label">1 / 1</span><button type="button" id="btn-next" class="btn-pager" aria-label="下一页">→</button></div><span class="stage-tag">HTML PRESENTATION</span></div></section>
+      <aside id="col-notes" class="side"><div id="notes-sidebar-resizer" class="sidebar-resizer" role="separator" aria-label="调整讲稿侧边栏宽度" aria-orientation="vertical" aria-controls="col-notes" tabindex="0" title="左右拖动调整宽度"></div><div class="notes-head"><strong>演讲备注</strong><span id="note-page" class="count-badge"></span></div><p class="side-description">只给自己看的提示，让表达更从容。</p><textarea id="note-text" wrap="soft" aria-label="本页演讲备注" placeholder="写下这一页的思路…&#10;&#10;开场、重点，或一个值得分享的故事。"></textarea><div class="notes-foot"><span id="save-status">备注保存在本机</span><span>仅自己可见</span></div></aside>
+      <aside id="col-play" class="side hidden"><div id="sidebar-resizer" class="sidebar-resizer" role="separator" aria-label="调整演示侧边栏宽度" aria-orientation="vertical" aria-controls="col-play" tabindex="0" title="左右拖动调整宽度"></div><div class="timer-head"><span>演示计时</span><span id="cast-status">未投屏</span></div><div class="play-timer" id="play-timer">00:00:00</div><div class="next-label">下一页预览</div><div class="next-box"><iframe id="frame-next" title="下一页" allow="fullscreen; autoplay" allowfullscreen></iframe></div><div class="notes-zoom-row"><strong>演讲备注</strong><span class="notes-zoom-btns"><button type="button" id="btn-note-smaller" class="btn-zoom" aria-label="备注缩小">A−</button><button type="button" id="btn-note-bigger" class="btn-zoom" aria-label="备注放大">A+</button></span></div><div id="play-notes" class="play-notes"></div></aside>
+    </div>
+    <footer class="statusbar"><span><i class="status-dot"></i><span id="project-status">准备就绪</span></span><span>F8 开始投屏 <span class="footer-divider">/</span> F9 结束投屏</span></footer>
+  </main>
+  <div id="toast" class="toast hidden" role="status" aria-live="polite"></div>
+  <script src="app.js"></script>
+</body>
+</html>

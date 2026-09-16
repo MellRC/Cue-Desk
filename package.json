@@ -1,0 +1,47 @@
+{
+  "name": "cuedesk",
+  "version": "1.0.0",
+  "private": true,
+  "description": "CueDesk 是一个本地 HTML 演示与双屏投放工具。",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "pack": "electron-builder --dir",
+    "dist": "electron-builder"
+  },
+  "devDependencies": {
+    "electron": "^33.4.5",
+    "electron-builder": "^26.0.12"
+  },
+  "build": {
+    "appId": "com.cuedesk.presenter",
+    "productName": "CueDesk",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "**/*",
+      "!release/**",
+      "!.qa/**",
+      "!assets/cuedesk-raccoon-logo-variants.zip",
+      "!assets/cuedesk-raccoon-logo-variants/cuedesk-raccoon-01-mask.png",
+      "!assets/cuedesk-raccoon-logo-variants/cuedesk-raccoon-02-geometric.*",
+      "!assets/cuedesk-raccoon-logo-variants/cuedesk-raccoon-03-line.*"
+    ],
+    "win": {
+      "signAndEditExecutable": false,
+      "target": [
+        "nsis"
+      ],
+      "icon": "assets/cuedesk.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "CueDesk",
+      "artifactName": "CueDesk-Setup-${version}.${ext}"
+    }
+  }
+}
