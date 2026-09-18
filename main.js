@@ -270,10 +270,74 @@ function watchDeck() {
   } catch (_) {}
 }
 
+function displayOf(win) {
+  if (!win || win.isDestroyed()) return screen.getPrimaryDisplay();
+  return screen.getDisplayMatching(win.getBounds());
+}
+
 function pickProjector() {
   const all = screen.getAllDisplays();
-  const primary = screen.getPrimaryDisplay();
-  return all.find((d) => d.id !== primary.id) || null;
+  if (all.length < 2) return null;
+  const laptop = displayOf(shellWin);
+  const externals = all.filter((d) => d.internal === false);
+  if (externals.length) {
+    return externals.find((d) => d.id !== laptop.id) || externals[0];
+  }
+  return all.find((d) => d.id !== laptop.id) || null;
+}
+
+let audiencePinTimer = 0;
+
+function audienceOnProjector(win, proj) {
+  if (!win || win.isDestroyed() || !proj) return false;
+  const b = win.getBounds();
+  const d = screen.getDisplayMatching(b);
+  if (d.id !== proj.id) return false;
+  return (
+    Math.abs(b.x - proj.bounds.x) <= 16 &&
+    Math.abs(b.y - proj.bounds.y) <= 16 &&
+    (win.isFullScreen() || (Math.abs(b.width - proj.bounds.width) <= 16 && Math.abs(b.height - proj.bounds.height) <= 16))
+  );
+}
+
+function placeAudienceOnProjector(win, proj) {
+  if (!win || win.isDestroyed() || !proj) return;
+  if (audienceOnProjector(win, proj)) return;
+  const apply = function () {
+    if (win.isDestroyed()) return;
+    const latest = pickProjector() || proj;
+    if (audienceOnProjector(win, latest)) return;
+    const b = latest.bounds;
+    win.setBounds({ x: b.x, y: b.y, width: b.width, height: b.height }, false);
+    win.setFullScreen(true);
+    if (shellWin && !shellWin.isDestroyed()) shellWin.focus();
+  };
+  if (win.isFullScreen()) {
+    win.once("leave-full-screen", function () {
+      setTimeout(apply, 40);
+    });
+    win.setFullScreen(false);
+    return;
+  }
+  apply();
+}
+
+function bindDisplayWatch() {
+  const relocate = function () {
+    clearTimeout(audiencePinTimer);
+    audiencePinTimer = setTimeout(function () {
+      if (!audienceWin || audienceWin.isDestroyed()) return;
+      const proj = pickProjector();
+      if (!proj) {
+        closeAudience();
+        return;
+      }
+      placeAudienceOnProjector(audienceWin, proj);
+    }, 120);
+  };
+  screen.on("display-added", relocate);
+  screen.on("display-removed", relocate);
+  screen.on("display-metrics-changed", relocate);
 }
 
 function muteLaptop(on) {
@@ -382,6 +446,7 @@ function startAudience() {
   if (audienceWin && !audienceWin.isDestroyed()) {
     muteLaptop(true);
     audienceWin.webContents.setAudioMuted(false);
+    placeAudienceOnProjector(audienceWin, proj);
     pushAllViews();
     pushMedia();
     routeAudienceAudio();
@@ -392,7 +457,8 @@ function startAudience() {
     y: proj.bounds.y,
     width: proj.bounds.width,
     height: proj.bounds.height,
-    fullscreen: true,
+    show: false,
+    fullscreen: false,
     frame: false,
     autoHideMenuBar: true,
     focusable: true,
@@ -411,6 +477,16 @@ function startAudience() {
   audienceWin.on("closed", () => {
     audienceWin = null;
     muteLaptop(false);
+  });
+  audienceWin.once("ready-to-show", () => {
+    const p = pickProjector();
+    if (!p) {
+      closeAudience();
+      return;
+    }
+    audienceWin.setBounds(p.bounds, false);
+    audienceWin.show();
+    placeAudienceOnProjector(audienceWin, p);
   });
   audienceWin.webContents.on("did-finish-load", () => {
     muteLaptop(true);
@@ -588,6 +664,7 @@ app.whenReady().then(async () => {
   await startServer();
   buildMenu();
   createShell();
+  bindDisplayWatch();
 });
 
 app.on("window-all-closed", () => {

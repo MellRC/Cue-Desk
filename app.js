@@ -12,6 +12,8 @@
   var frameMain = document.getElementById("frame-main");
   var frameNext = document.getElementById("frame-next");
   var workspace = document.getElementById("workspace");
+  var cardTip = document.getElementById("card-tip");
+  var cardTipTimer = 0;
 
   var sidebarResizers = Array.from(document.querySelectorAll(".sidebar-resizer"));
   var sidebarWidth = 0;
@@ -264,7 +266,44 @@
     }
   }
 
+  function formatImportTime(ms) {
+    if (!ms) return "未知";
+    return new Date(ms).toLocaleString("zh-CN", { hour12: false });
+  }
+
+  function hideCardTip() {
+    clearTimeout(cardTipTimer);
+    cardTip.classList.add("hidden");
+  }
+
+  function placeCardTip(card) {
+    var r = card.getBoundingClientRect();
+    var tw = cardTip.offsetWidth;
+    var th = cardTip.offsetHeight;
+    var left = Math.min(Math.max(12, r.left), window.innerWidth - tw - 12);
+    var top = r.bottom + 8;
+    if (top + th > window.innerHeight - 12) top = r.top - th - 8;
+    if (top < 12) top = 12;
+    cardTip.style.left = left + "px";
+    cardTip.style.top = top + "px";
+  }
+
+  function showCardTip(card, p) {
+    var html = "";
+    if (p.missing) html += '<div class="card-tip-miss">文件丢失</div>';
+    html +=
+      '<div class="card-tip-row"><span>路径</span><span>' +
+      esc(p.htmlPath || "") +
+      '</span></div><div class="card-tip-row"><span>导入</span><span>' +
+      esc(formatImportTime(p.createdAt)) +
+      "</span></div>";
+    cardTip.innerHTML = html;
+    cardTip.classList.remove("hidden");
+    placeCardTip(card);
+  }
+
   function renderCards(list) {
+    hideCardTip();
     library = list;
     var query = document.getElementById("search").value.trim().toLowerCase();
     var visible = list.filter(function (p) { return ((p.title || "") + " " + fileName(p.htmlPath)).toLowerCase().includes(query); });
@@ -301,6 +340,13 @@
       });
       bottom.appendChild(del);
       card.appendChild(bottom);
+      card.addEventListener("mouseenter", function () {
+        clearTimeout(cardTipTimer);
+        cardTipTimer = setTimeout(function () {
+          showCardTip(card, p);
+        }, 160);
+      });
+      card.addEventListener("mouseleave", hideCardTip);
       cards.appendChild(card);
     });
   }
@@ -498,6 +544,10 @@
       if (r && r.ok) bindFrames(r);
     });
   });
+
+  var libraryScroll = document.querySelector(".library-scroll");
+  if (libraryScroll) libraryScroll.addEventListener("scroll", hideCardTip, { passive: true });
+  window.addEventListener("blur", hideCardTip);
 
   setInterval(poll, 200);
   setInterval(tick, 250);

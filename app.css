@@ -681,6 +681,39 @@ button svg {
   z-index:20;
   font-size:12px;
   max-width:80%}
+.card-tip {
+  position:fixed;
+  z-index:30;
+  pointer-events:none;
+  min-width:220px;
+  max-width:min(420px, calc(100vw - 24px));
+  padding:10px 12px;
+  border:1px solid var(--strong-line);
+  border-radius:10px;
+  background:var(--panel);
+  color:var(--ink);
+  box-shadow:var(--shadow);
+  font-size:12px;
+  line-height:1.55}
+.card-tip-row {
+  display:grid;
+  grid-template-columns:42px minmax(0,1fr);
+  gap:8px;
+  align-items:start}
+.card-tip-row + .card-tip-row {
+  margin-top:6px}
+.card-tip-row span:first-child {
+  color:var(--muted);
+  font-size:10px;
+  letter-spacing:.08em;
+  padding-top:1px}
+.card-tip-row span:last-child {
+  overflow-wrap:anywhere;
+  word-break:break-all}
+.card-tip-miss {
+  color:#c45c4a;
+  font-size:11px;
+  margin-bottom:6px}
 ::-webkit-scrollbar {
   width:6px;
   height:6px}
